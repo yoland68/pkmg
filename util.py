@@ -1,3 +1,5 @@
+import models
+
 CLASS_MAP = {
     'pokemon': models.Pokemon,
     'trainer': models.Trainer,
