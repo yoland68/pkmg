@@ -5,9 +5,11 @@ api_version: 1
 threadsafe: true
 
 handlers:
-- url: api/.*
+- url: /api/.*
   script: api_handler.app
-- url: input/.*
+
+- url: /input/.*
   script: input_handler.app
-- url: .*
+
+- url: /.*
   script: main_handler.app
