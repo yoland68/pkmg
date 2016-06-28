@@ -10,6 +10,10 @@ class Type(ndb.Model):
         'name': self.name
     }
 
+  def deserialize(json):
+    pass
+
+
 class Pokemon(ndb.Model):
   pokemon_id = ndb.IntegerProperty(required=True, indexed=True)
   name = ndb.StringProperty(required=True, indexed=True)
