@@ -1,21 +1,42 @@
 from google.appengine.ext import ndb
+from google.appengine.api import search
 
-class Type(ndb.Model):
-  type_id = ndb.IntegerProperty(required=True)
+import json
+import logging
+
+class BaseModel(ndb.Model):
+  object_hook = None
+
+  @classmethod
+  def deserialize_and_update(cls, data, json_object_hook=cls.object_hook):
+    #STUB: this function is for use json to update the database instead of just importing
+    pass
+
+  @classmethod
+  def deserialize(cls, data, json_object_hook=cls.object_hook):
+    data = json.loads(data.get('json_data'), json_object_hook)
+    properties = {}
+    for key, value in data.iteritems():
+      if getattr(cls, key) is not None:
+        properties[key] = value
+      else:
+        logging.warn('This key: %s does not exist for %s', key, cls.__name__)
+    entity = cls(**properties)
+    entity.put()
+
+
+class Type(BaseModel):
+  id = ndb.IntegerProperty(required=True)
   name = ndb.StringProperty(required=True)
 
   def to_dict(self):
     return {
-        'type_id': self.type_id,
+        'id': self.id,
         'name': self.name
     }
 
-  def deserialize(json):
-    pass
-
-
-class Pokemon(ndb.Model):
-  pokemon_id = ndb.IntegerProperty(required=True, indexed=True)
+class Pokemon(BaseModel):
+  id = ndb.IntegerProperty(required=True, indexed=True)
   name = ndb.StringProperty(required=True, indexed=True)
   evolution = ndb.JsonProperty(required=True)
   locations = ndb.GeoPtProperty(repeated=True)
@@ -23,49 +44,97 @@ class Pokemon(ndb.Model):
   want_count = ndb.IntegerProperty(indexed=True)
   have_count = ndb.IntegerProperty(indexed=True)
   evolution_candy_amount = ndb.IntegerProperty(indexed=False)
-  types = ndb.StructuredProperty(Type, repeated=True)
+  type_keys = ndb.KeyProperty(kind='Type', repeated=True)
 
   def to_dict(self):
     return {
-        'pokemon_id': self.pokemon_id,
+        'id': self.id,
         'name': self.name,
         'evolution': self.evolution,
-        'locations': self.locations, #how to serialize this one?
+        'locations': self.locations,
         'seen_count': self.seen_count,
         'want_count': self.want_count,
         'have_count': self.have_count,
         'evolution_candy_amount': self.evolution_candy_amount,
-        'types': self.types
+        'type_keys': self.type_keys
     }
+
+  @staticmethod
+  def object_hook(dct):
+    if dct.get('locations') is not None and len(dct.get('locations')) != 0:
+      geo_pt_list = []
+      for loc in dct.get('locations'):
+        lat, lon = loc
+        geo_pt_list.append(search.GeoField(lat, lon))
+      dct.update({'location': geo_pt_list})
+    if dct.get('type_keys') is not None and len(dct.get('type_keys')) != 0:
+      key_list = []
+      for key_id in dct.get('type_keys'):
+        key_list.append(ndb.Key('Type', key_id))
+      dct.update({'type_keys': key_list})
+    return dct
+
  
-class Report(ndb.Model):
+class Move(BaseModel):
+  id = ndb.IntegerProperty(required=True)
+  name = ndb.StringProperty(required=True)
+  type_key = ndb.KeyProperty(kind='Type', required=True)
+
+  @staticmethod
+  def object_hook(dct):
+    if dct.get('type_key') is not None:
+      dct.update({'type_key': ndb.Key('Type', dct.get('type_key'))})
+    return dct
+
+class Report(BaseModel):
   datetime = ndb.DateTimeProperty(required=True)
   location = ndb.GeoPtProperty()
-  user_id = ndb.StringProperty(required=True)
-  pokemon_id = ndb.StringProperty(required=True)
+  pokemon_key = ndb.KeyProperty(kind='Pokemon', required=True)
 
   def to_dict(self):
     return {
         'datetime': self.datetime,
         'location': self.location,
-        'user_id': self.user_id,
-        'pokemon_id': self.pokemon_id
    }
 
-class Trainer(ndb.Model):
-  user_id = ndb.StringProperty(required=True)
-  reports = ndb.StructuredProperty(Report, repeated=True)
-  want_list = ndb.IntegerProperty(repeated=True)
-  seen_list = ndb.IntegerProperty(repeated=True)
-  have_list = ndb.IntegerProperty(repeated=True)
+  @staticmethod
+  def object_hook(dct):
+    if dct.get('location') is not None:
+      dct.update({'type_key': ndb.Key('Type', dct.get('type_key'))})
+    return dct
+
+
+class Trainer(BaseModel):
+  id = ndb.StringProperty(required=True)
+  want_list = ndb.KeyProperty(kind='Pokemon', repeated=True)
+  seen_list = ndb.KeyProperty(kind='Pokemon', repeated=True)
+  have_list = ndb.KeyProperty(kind='Pokemon', repeated=True)
 
   def to_dict(self):
     return {
-        'user_id': 'user_id',
-        'reports': 'reports',
-        'want_list': 'want_list',
-        'seen_list': 'seen_list',
-        'have_list': 'have_list'
+        'id': self.id,
+        'reports': self.reports,
+        'want_list': self.want_list,
+        'seen_list': self.seen_list,
+        'have_list': self.have_list
     }
 
+  @staticmethod
+  def object_hook(dct):
+    if dct.get('seen_list') is not None and len(dct.get('seen_list')) != 0:
+      seen_list = []  
+      for i in dct.get('seen_list'):
+        seen_list.append(ndb.KeyProperty(kind='Pokemon', i))
+      dct.update({'seen_list': seen_list})
+    if dct.get('want_list') is not None and len(dct.get('want_list')) != 0:
+      want_list = []  
+      for i in dct.get('want_list'):
+        have_list.append(ndb.KeyProperty(kind='Pokemon', i))
+      dct.update({'want_list': want_list})
+    if dct.get('have_list') is not None and len(dct.get('have_list')) != 0:
+      have_list = []  
+      for i in dct.get('have_list'):
+        have_list.append(ndb.KeyProperty(kind='Pokemon', i))
+      dct.update({'have_list': have_list})
 
+    return dct
