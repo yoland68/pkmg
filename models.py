@@ -8,19 +8,32 @@ class BaseModel(ndb.Model):
   object_hook = None
 
   @classmethod
-  def deserialize_and_update(cls, data, json_object_hook=cls.object_hook):
+  def deserialize_and_update(cls, data, json_object_hook=None):
     #STUB: this function is for use json to update the database instead of just importing
     pass
 
   @classmethod
-  def deserialize(cls, data, json_object_hook=cls.object_hook):
+  def deserialize(cls, data, json_object_hook=None):
+    if json_object_hook is None:
+      json_object_hook = cls.object_hook
     data = json.loads(data.get('json_data'), json_object_hook)
+    if isinstance(data, list):
+      for i in data:
+        cls.deserialize_single(i)
+    elif isinstance(data, dict):
+      cls.deserialize_single(i, data)
+
+
+  @classmethod
+  def deserialize_single(cls, data):
     properties = {}
     for key, value in data.iteritems():
       if getattr(cls, key) is not None:
         properties[key] = value
       else:
         logging.warn('This key: %s does not exist for %s', key, cls.__name__)
+    import pdb
+    pdb.set_trace()
     entity = cls(**properties)
     entity.put()
 
@@ -124,17 +137,17 @@ class Trainer(BaseModel):
     if dct.get('seen_list') is not None and len(dct.get('seen_list')) != 0:
       seen_list = []  
       for i in dct.get('seen_list'):
-        seen_list.append(ndb.KeyProperty(kind='Pokemon', i))
+        seen_list.append(ndb.Key('Pokemon', i))
       dct.update({'seen_list': seen_list})
     if dct.get('want_list') is not None and len(dct.get('want_list')) != 0:
       want_list = []  
       for i in dct.get('want_list'):
-        have_list.append(ndb.KeyProperty(kind='Pokemon', i))
+        have_list.append(ndb.Key('Pokemon', i))
       dct.update({'want_list': want_list})
     if dct.get('have_list') is not None and len(dct.get('have_list')) != 0:
       have_list = []  
       for i in dct.get('have_list'):
-        have_list.append(ndb.KeyProperty(kind='Pokemon', i))
+        have_list.append(ndb.Key('Pokemon', i))
       dct.update({'have_list': have_list})
 
     return dct

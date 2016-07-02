@@ -17,7 +17,7 @@ def ImportTypes(api_url):
     match_result = re.match(TYPE_URL_PATTERN, i.get('url'))
     if match_result is None:
       raise Exception('Invalid input excpetion')
-    type_id = match_result.group(1)
+    type_id = int(match_result.group(1))
     type_name = i.get('name')
     assert type_id is not None
     assert type_name is not None
