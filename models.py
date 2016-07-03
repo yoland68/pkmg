@@ -16,7 +16,7 @@ class BaseModel(ndb.Model):
   def deserialize(cls, data, json_object_hook=None):
     if json_object_hook is None:
       json_object_hook = cls.object_hook
-    data = json.loads(data.get('json_data'), json_object_hook)
+    data = json.loads(data.get('json_data'), object_hook=json_object_hook)
     if isinstance(data, list):
       for i in data:
         cls.deserialize_single(i)
@@ -32,8 +32,6 @@ class BaseModel(ndb.Model):
         properties[key] = value
       else:
         logging.warn('This key: %s does not exist for %s', key, cls.__name__)
-    import pdb
-    pdb.set_trace()
     entity = cls(**properties)
     entity.put()
 
@@ -48,16 +46,19 @@ class Type(BaseModel):
         'name': self.name
     }
 
+
 class Pokemon(BaseModel):
   id = ndb.IntegerProperty(required=True, indexed=True)
   name = ndb.StringProperty(required=True, indexed=True)
-  evolution = ndb.JsonProperty(required=True)
+  evolution_chain = ndb.KeyProperty(kind='Evolution', required=True)
   locations = ndb.GeoPtProperty(repeated=True)
   seen_count = ndb.IntegerProperty(indexed=True)
   want_count = ndb.IntegerProperty(indexed=True)
   have_count = ndb.IntegerProperty(indexed=True)
-  evolution_candy_amount = ndb.IntegerProperty(indexed=False)
   type_keys = ndb.KeyProperty(kind='Type', repeated=True)
+  evolves_into = ndb.KeyProperty(kind='Pokemon', repeated=True)
+  evolution_candy_amount = ndb.IntegerProperty(indexed=False)
+  moves = ndb.KeyProperty(kind='Move', repeated=True)
 
   def to_dict(self):
     return {
@@ -87,6 +88,26 @@ class Pokemon(BaseModel):
       dct.update({'type_keys': key_list})
     return dct
 
+
+class Evolution(BaseModel):
+  id = ndb.IntegerProperty(required=True, indexed=True)
+  pokemon_keys = ndb.KeyProperty(kind='Pokemon', repeated=True)
+
+  def to_dict(self):
+    return {
+        'id': self.id,
+        'pokemon_keys': self.pokemon_keys
+    }
+
+  @staticmethod
+  def object_hook(dct):
+    if dct.get('pokemon_keys') is not None and len(dct.get('pokemon_keys')) != 0:
+      pokemon_list = []
+      for poke in dct.get('pokemon_keys'):
+        pokemon_list.append(ndb.Key('Pokemon', poke))
+      dct.update({'pokemon_keys': pokemon_list})
+    return dct
+
  
 class Move(BaseModel):
   id = ndb.IntegerProperty(required=True)
@@ -98,6 +119,7 @@ class Move(BaseModel):
     if dct.get('type_key') is not None:
       dct.update({'type_key': ndb.Key('Type', dct.get('type_key'))})
     return dct
+
 
 class Report(BaseModel):
   datetime = ndb.DateTimeProperty(required=True)
