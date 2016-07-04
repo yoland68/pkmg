@@ -55,7 +55,7 @@ def PokemonAndMoveImport(api_url, pokemon_json_file, move_json_file):
   move_id_list = []
   evolution_pair_list = []
 
-  for poke_id in range(1, 5):
+  for poke_id in range(1, 152):
     url = api_url % poke_id
     print('requesting for pokemon api: %s' % url)
     poke_req = requests.get(url)
@@ -69,9 +69,13 @@ def PokemonAndMoveImport(api_url, pokemon_json_file, move_json_file):
           species_result.get('evolves_from_species').get('url'), POKEMON_SPECIES_PATTERN)
       if evolves_from_id <= 151:
         evolution_pair_list.append((evolves_from_id, poke_id))
-    current_move_id_list = [_GetId(m.get('move').get('url'),
-      MOVE_URL_PATTERN) for m in result.get('moves')
-      if 'red-blue' in json.dumps(m.get('version_group_details'))]
+    
+    current_move_id_list = []
+    for m in result.get('moves'):
+      version_group_string = json.dumps(m.get('version_group_details'))
+      if 'red-blue' in version_group_string or 'yellow' in version_group_string:
+        current_move_id_list.append(_GetId(m.get('move').get('url'),
+                                           MOVE_URL_PATTERN))
     move_id_list.extend(current_move_id_list)
     pokemon_list.append(
         {
@@ -81,16 +85,20 @@ def PokemonAndMoveImport(api_url, pokemon_json_file, move_json_file):
                    for t in result.get('types')],
           'evolution_chain': _GetId(species_result.get('evolution_chain').get('url'),
                                     EVOLUTION_CHAIN_PATTERN),
-          'moves': current_move_id_list,
+          'move_keys': current_move_id_list,
         })
     
   for a, b in evolution_pair_list:
-    pokemon_list[a-1].update({'evolves_into': b})
+    if pokemon_list[a-1].get('evolves_into'):
+      pokemon_list[a-1].get('evolves_into').append(b)
+    else:
+      pokemon_list[a-1]['evolves_into'] = [b]
   _WriteToFile(pokemon_json_file, pokemon_list)
 
-  move_id_set = set(move_id_list)
+  move_id_list = list(set(move_id_list))
+  move_id_list.sort()
   move_list = []
-  for move_id in move_id_set:
+  for move_id in move_id_list:
     move_url = MOVE_API_URL % move_id
     print('requesting for move api: %s' % move_url)
     move_req = requests.get(move_url)
@@ -119,7 +127,7 @@ def TypeImport(api_url, type_json_file):
 
 def _WriteToFile(file_name, obj):
   with open(file_name, 'w') as f:
-    f.write(json.dumps(obj, indent=2, separators=(',', ': ')))
+    f.write(json.dumps(obj))
 
 def main():
   # ImportTypes(TYPE_API_URL, TYPE_JSON_FILE)

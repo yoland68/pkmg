@@ -1,0 +1,14 @@
+<!doctype html>
+<html>
+  <body>
+    {% for poke in pokemons %}
+      <div>
+        <span>Name: {{ poke.name }}</span>
+        <span>Id: {{ poke.id }}</span>
+        <!-- Add a filter for following so it can handle multiple evolution choices-->
+        <span>Evolves into: {{ poke.evolves_into[0] }}</span> 
+        <span>Type: {{ poke.types }}</span>
+    {% endfor %}
+  </body>
+</html>
+

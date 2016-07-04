@@ -32,6 +32,8 @@ class BaseModel(ndb.Model):
         properties[key] = value
       else:
         logging.warn('This key: %s does not exist for %s', key, cls.__name__)
+    # import pdb
+    # pdb.set_trace()
     entity = cls(**properties)
     entity.put()
 
@@ -57,35 +59,41 @@ class Pokemon(BaseModel):
   have_count = ndb.IntegerProperty(indexed=True)
   type_keys = ndb.KeyProperty(kind='Type', repeated=True)
   evolves_into = ndb.KeyProperty(kind='Pokemon', repeated=True)
+  move_keys = ndb.KeyProperty(kind='Move', repeated=True)
   evolution_candy_amount = ndb.IntegerProperty(indexed=False)
-  moves = ndb.KeyProperty(kind='Move', repeated=True)
 
   def to_dict(self):
     return {
         'id': self.id,
         'name': self.name,
-        'evolution': self.evolution,
+        'evolution_chain': self.evolution_chain,
         'locations': self.locations,
         'seen_count': self.seen_count,
         'want_count': self.want_count,
         'have_count': self.have_count,
+        'type_keys': self.type_keys,
+        'evolves_into': self.evolves_into,
+        'move_keys': self.move_keys,
         'evolution_candy_amount': self.evolution_candy_amount,
-        'type_keys': self.type_keys
-    }
+   }
 
   @staticmethod
   def object_hook(dct):
     if dct.get('locations') is not None and len(dct.get('locations')) != 0:
-      geo_pt_list = []
-      for loc in dct.get('locations'):
-        lat, lon = loc
-        geo_pt_list.append(search.GeoField(lat, lon))
+      geo_pt_list = [search.GeoField(lat, lon) for lac, lon in dct.get('locations')]
       dct.update({'location': geo_pt_list})
     if dct.get('type_keys') is not None and len(dct.get('type_keys')) != 0:
-      key_list = []
-      for key_id in dct.get('type_keys'):
-        key_list.append(ndb.Key('Type', key_id))
+      key_list = [ndb.Key('Type', k) for k in dct.get('type_keys')]
       dct.update({'type_keys': key_list})
+    if dct.get('move_keys') is not None and len(dct.get('move_keys')) != 0:
+      move_list = [ndb.Key('Move', m) for m in dct.get('move_keys')]
+      dct.update({'move_keys': move_list})
+    if dct.get('evolution_chain') is not None:
+      evolution_id = dct.get('evolution_chain')
+      dct.update({'evolution_chain': ndb.Key('Evolution', evolution_id)})
+    if dct.get('evolves_into') is not None:
+      evo_into_keys = [ndb.Key('Pokemon', p) for p in dct.get('evolves_into')]
+      dct.update({'evolves_into': evo_into_keys})
     return dct
 
 
