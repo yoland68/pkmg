@@ -118,7 +118,7 @@ def TypeImport(api_url, type_json_file):
   results = import_dic.get('results')
   output_dic = []
   for i in results:
-    type_id = _GetPokemonId(i.get('url'), TYPE_URL_PATTERN)
+    type_id = _GetId(i.get('url'), TYPE_URL_PATTERN)
     type_name = i.get('name')
     assert type_id is not None
     assert type_name is not None
@@ -130,9 +130,9 @@ def _WriteToFile(file_name, obj):
     f.write(json.dumps(obj))
 
 def main():
-  # ImportTypes(TYPE_API_URL, TYPE_JSON_FILE)
+  TypeImport(TYPE_API_URL, TYPE_JSON_FILE)
   # EvolutionImport(EVOLUTION_API_URL, EVOLUTION_JSON_FILE)
-  PokemonAndMoveImport(POKEMON_API_URL, 'local_json/pokemon.json', 'local_json/move.json')
+  # PokemonAndMoveImport(POKEMON_API_URL, 'local_json/pokemon.json', 'local_json/move.json')
 
 if __name__ == '__main__':
   main()

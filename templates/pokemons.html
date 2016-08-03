@@ -7,7 +7,7 @@
         <span>Id: {{ poke.id }}</span>
         <!-- Add a filter for following so it can handle multiple evolution choices-->
         <span>Evolves into: {{ poke.evolves_into[0] }}</span> 
-        <span>Type: {{ poke.types }}</span>
+        <span>Type: {{ poke.type_keys }}</span>
     {% endfor %}
   </body>
 </html>

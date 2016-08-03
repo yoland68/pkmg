@@ -4,6 +4,7 @@ from google.appengine.api import search
 import json
 import logging
 
+
 class BaseModel(ndb.Model):
   object_hook = None
 
@@ -28,18 +29,12 @@ class BaseModel(ndb.Model):
   def deserialize_single(cls, data):
     properties = {}
     for key, value in data.iteritems():
-      if getattr(cls, key) is not None:
-        properties[key] = value
-      else:
-        logging.warn('This key: %s does not exist for %s', key, cls.__name__)
-    # import pdb
-    # pdb.set_trace()
+      properties[key] = value
     entity = cls(**properties)
-    entity.put()
+    result = entity.put()
 
 
 class Type(BaseModel):
-  id = ndb.IntegerProperty(required=True)
   name = ndb.StringProperty(required=True)
 
   def to_dict(self):
@@ -50,7 +45,6 @@ class Type(BaseModel):
 
 
 class Pokemon(BaseModel):
-  id = ndb.IntegerProperty(required=True, indexed=True)
   name = ndb.StringProperty(required=True, indexed=True)
   evolution_chain = ndb.KeyProperty(kind='Evolution', required=True)
   locations = ndb.GeoPtProperty(repeated=True)
@@ -64,14 +58,14 @@ class Pokemon(BaseModel):
 
   def to_dict(self):
     return {
-        'id': self.id,
+        'id': self.key.id(),
         'name': self.name,
         'evolution_chain': self.evolution_chain,
         'locations': self.locations,
         'seen_count': self.seen_count,
         'want_count': self.want_count,
         'have_count': self.have_count,
-        'type_keys': self.type_keys,
+        'type_keys': [t.get() for t in self.type_keys],
         'evolves_into': self.evolves_into,
         'move_keys': self.move_keys,
         'evolution_candy_amount': self.evolution_candy_amount,
@@ -98,7 +92,6 @@ class Pokemon(BaseModel):
 
 
 class Evolution(BaseModel):
-  id = ndb.IntegerProperty(required=True, indexed=True)
   pokemon_keys = ndb.KeyProperty(kind='Pokemon', repeated=True)
 
   def to_dict(self):
@@ -118,7 +111,6 @@ class Evolution(BaseModel):
 
  
 class Move(BaseModel):
-  id = ndb.IntegerProperty(required=True)
   name = ndb.StringProperty(required=True)
   type_key = ndb.KeyProperty(kind='Type', required=True)
 
@@ -148,14 +140,14 @@ class Report(BaseModel):
 
 
 class Trainer(BaseModel):
-  id = ndb.StringProperty(required=True)
+  reports = ndb.StructuredProperty(Report, repeated=True)
   want_list = ndb.KeyProperty(kind='Pokemon', repeated=True)
   seen_list = ndb.KeyProperty(kind='Pokemon', repeated=True)
   have_list = ndb.KeyProperty(kind='Pokemon', repeated=True)
 
   def to_dict(self):
     return {
-        'id': self.id,
+        'user_id': self.user_id,
         'reports': self.reports,
         'want_list': self.want_list,
         'seen_list': self.seen_list,
