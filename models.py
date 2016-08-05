@@ -4,6 +4,14 @@ from google.appengine.api import search
 import json
 import logging
 
+_INPUT_DATE_FORMAT = '%Y-%m-%d'
+_OUTPUT_DATETIME_FORMAT = '%Y/%m/%d %H:%M:%S UTC'
+
+def DateToString(date, datetime_format=_OUTPUT_DATETIME_FORMAT):
+  return datetime.datetime.strftime(date, datetime_format)
+
+def StringToDate(date_string, datetime_format=_INPUT_DATE_FORMAT):
+  return datetime.datetime.strptime(date_string, datetime_format)
 
 class BaseModel(ndb.Model):
   object_hook = None
@@ -39,15 +47,14 @@ class Type(BaseModel):
 
   def to_dict(self):
     return {
-        'id': self.id,
+        'id': str(self.key.id()),
         'name': self.name
     }
 
 
 class Pokemon(BaseModel):
   name = ndb.StringProperty(required=True, indexed=True)
-  evolution_chain = ndb.KeyProperty(kind='Evolution', required=True)
-  locations = ndb.GeoPtProperty(repeated=True)
+  evolution_chain_key = ndb.KeyProperty(kind='Evolution', required=True)
   seen_count = ndb.IntegerProperty(indexed=True)
   want_count = ndb.IntegerProperty(indexed=True)
   have_count = ndb.IntegerProperty(indexed=True)
@@ -58,33 +65,29 @@ class Pokemon(BaseModel):
 
   def to_dict(self):
     return {
-        'id': self.key.id(),
+        'id': int(self.key.id()),
         'name': self.name,
-        'evolution_chain': self.evolution_chain,
-        'locations': self.locations,
+        'evolution_chain_key': str(self.evolution_chain_key),
         'seen_count': self.seen_count,
         'want_count': self.want_count,
         'have_count': self.have_count,
-        'type_keys': [t.get() for t in self.type_keys],
-        'evolves_into': self.evolves_into,
-        'move_keys': self.move_keys,
+        'type_keys': [str(t) for t in self.type_keys],
+        'evolves_into': [str(e) for e in self.evolves_into],
+        'move_keys': [str(k) for k in self.move_keys],
         'evolution_candy_amount': self.evolution_candy_amount,
    }
 
   @staticmethod
   def object_hook(dct):
-    if dct.get('locations') is not None and len(dct.get('locations')) != 0:
-      geo_pt_list = [search.GeoField(lat, lon) for lac, lon in dct.get('locations')]
-      dct.update({'location': geo_pt_list})
     if dct.get('type_keys') is not None and len(dct.get('type_keys')) != 0:
       key_list = [ndb.Key('Type', k) for k in dct.get('type_keys')]
       dct.update({'type_keys': key_list})
     if dct.get('move_keys') is not None and len(dct.get('move_keys')) != 0:
       move_list = [ndb.Key('Move', m) for m in dct.get('move_keys')]
       dct.update({'move_keys': move_list})
-    if dct.get('evolution_chain') is not None:
-      evolution_id = dct.get('evolution_chain')
-      dct.update({'evolution_chain': ndb.Key('Evolution', evolution_id)})
+    if dct.get('evolution_chain_key') is not None:
+      evolution_id = dct.get('evolution_chain_key')
+      dct.update({'evolution_chain_key': ndb.Key('Evolution', evolution_id)})
     if dct.get('evolves_into') is not None:
       evo_into_keys = [ndb.Key('Pokemon', p) for p in dct.get('evolves_into')]
       dct.update({'evolves_into': evo_into_keys})
@@ -96,8 +99,8 @@ class Evolution(BaseModel):
 
   def to_dict(self):
     return {
-        'id': self.id,
-        'pokemon_keys': self.pokemon_keys
+        'id': str(self.key.id()),
+        'pokemon_keys': [str(k) for k in self.pokemon_keys]
     }
 
   @staticmethod
@@ -120,6 +123,12 @@ class Move(BaseModel):
       dct.update({'type_key': ndb.Key('Type', dct.get('type_key'))})
     return dct
 
+  def to_dict(self):
+    return {
+        'name': self.name,
+        'type_key': str(self.type_key)
+    }
+
 
 class Report(BaseModel):
   datetime = ndb.DateTimeProperty(required=True)
@@ -128,14 +137,14 @@ class Report(BaseModel):
 
   def to_dict(self):
     return {
-        'datetime': self.datetime,
+        'datetime': util.DateToString(self.datetime),
         'location': self.location,
-   }
+    }
 
   @staticmethod
   def object_hook(dct):
     if dct.get('location') is not None:
-      dct.update({'type_key': ndb.Key('Type', dct.get('type_key'))})
+      dct.update({'pokemon_key': ndb.Key('Pokemon', dct.get('type_key'))})
     return dct
 
 
@@ -147,11 +156,11 @@ class Trainer(BaseModel):
 
   def to_dict(self):
     return {
-        'user_id': self.user_id,
-        'reports': self.reports,
-        'want_list': self.want_list,
-        'seen_list': self.seen_list,
-        'have_list': self.have_list
+        'user_id': str(self.key.id()),
+        'reports': [str(k) for k in self.reports],
+        'want_list': [str(k) for k in self.want_list],
+        'seen_list': [str(k) for k in self.seen_list],
+        'have_list': [str(k) for k in self.have_list]
     }
 
   @staticmethod

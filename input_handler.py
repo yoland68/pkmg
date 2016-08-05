@@ -2,6 +2,8 @@
 import flask
 import logging
 
+from google.appengine.ext import ndb
+
 import models
 import util
 
@@ -14,6 +16,8 @@ def InputJson(model_type):
   elif flask.request.method == 'POST':
     input_data = flask.request.form 
     model_class = util.CLASS_MAP.get(model_type)
+    if input_data.get('delete') == 'on':
+      ndb.delete_multi(model_class.query().fetch(keys_only=True))
     if model_class is None:
       logging.error('model type: %s, is not found', model_type)
       flask.abort(404)
