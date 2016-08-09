@@ -5,14 +5,21 @@ api_version: 1
 threadsafe: true
 
 handlers:
+- url: /static/*
+  static_dir: static
+
 - url: /api/.*
   script: api_handler.app
 
 - url: /input/.*
   script: input_handler.app
 
+- url: /local-import.*
+  script: local_json_import_handler.app
+
 - url: /.*
   script: main_handler.app
+
 
 libraries:
 - name: jinja2

@@ -18,14 +18,15 @@ class BaseModel(ndb.Model):
 
   @classmethod
   def deserialize_and_update(cls, data, json_object_hook=None):
-    #STUB: this function is for use json to update the database instead of just importing
+    #TODO: this function is for use json to update the database 
+    #      instead of just importing
     pass
 
   @classmethod
   def deserialize(cls, data, json_object_hook=None):
     if json_object_hook is None:
       json_object_hook = cls.object_hook
-    data = json.loads(data.get('json_data'), object_hook=json_object_hook)
+    data = json.loads(data, object_hook=json_object_hook)
     if isinstance(data, list):
       for i in data:
         cls.deserialize_single(i)

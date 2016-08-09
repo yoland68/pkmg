@@ -21,5 +21,5 @@ def InputJson(model_type):
     if model_class is None:
       logging.error('model type: %s, is not found', model_type)
       flask.abort(404)
-    model_class.deserialize(input_data)
+    model_class.deserialize(input_data.get('json_data'))
     return flask.redirect('/')

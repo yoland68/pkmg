@@ -6,15 +6,15 @@ import logging
 from google.appengine.api import users
 from google.appengine.ext import ndb
 
+import jinja_filters
+
 app = flask.Flask(__name__)
+
+jinja_filters.AddJinjaFilteres(app)
 
 
 @app.route('/')
-def IndexView():
-  return 'Well done by Yoland!'
-
-@app.route('/pokemon')
-def PokemonView():
+def MainView():
   pokemon_entities = models.Pokemon.query().fetch()
   pokemons = [p.to_dict() for p in pokemon_entities]
   return flask.render_template('pokemons.html', pokemons=pokemons)

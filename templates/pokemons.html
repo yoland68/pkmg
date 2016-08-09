@@ -1,14 +1,25 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html class="no-js" lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PokeCenter</title>
+    <link rel="stylesheet" href="css/foundation.css">
+    <link rel="stylesheet" href="css/app.css">
+  </head>
   <body>
-    {% for poke in pokemons %}
-      <div>
-        <span>Name: {{ poke.name }}</span>
-        <span>Id: {{ poke.id }}</span>
-        <!-- Add a filter for following so it can handle multiple evolution choices-->
-        <span>Evolves into: {{ poke.evolves_into[0] }}</span> 
-        <span>Type: {{ poke.type_keys }}</span>
-    {% endfor %}
+    <div class="row">
+      <div class="large-8 medium-8 columns">
+        <div class="row">
+        {% for pokemon in pokemons %}
+        <div class="large-3 medium-4 columns">
+          <img src="/static/imgs/pokemon/{{ pokemon.id | ConvertToImageName }}.png">
+          <h4>{{pokemon.name}}</h4>
+        </div>
+        {% endfor %}
+        </div>
+      </div>
+    </div>
   </body>
 </html>
-
