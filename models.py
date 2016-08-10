@@ -72,9 +72,9 @@ class Pokemon(BaseModel):
         'seen_count': self.seen_count,
         'want_count': self.want_count,
         'have_count': self.have_count,
-        'type_keys': [str(t) for t in self.type_keys],
+        'types': [t.get() for t in self.type_keys],
         'evolves_into': [str(e) for e in self.evolves_into],
-        'move_keys': [str(k) for k in self.move_keys],
+        'moves': [k.get() for k in self.move_keys],
         'evolution_candy_amount': self.evolution_candy_amount,
    }
 

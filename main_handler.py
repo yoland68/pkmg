@@ -19,6 +19,16 @@ def MainView():
   pokemons = [p.to_dict() for p in pokemon_entities]
   return flask.render_template('pokemons.html', pokemons=pokemons)
 
+@app.route('/pokemon/<int:pokemon_id>')
+def PokemonDetailView(pokemon_id):
+  pokemon_entity = models.Pokemon.get_by_id(pokemon_id)
+  if pokemon_entity is not None:
+    pokemon = pokemon_entity.to_dict()
+    return flask.render_template(
+        'pokemon_detail.html', pokemon=pokemon)
+  else:
+    flask.abort(404)
+
 @app.route('/report', methods=['GET'])
 def ReportGetView():
   return flask.render_template('report.html')

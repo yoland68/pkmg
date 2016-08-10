@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PokeCenter</title>
+    <link rel="stylesheet" href="/static/css/foundation.css">
+    <link rel="stylesheet" href="/static/css/app.css">
+    <script src="/static/js/holder.js"></script>
+  </head>
+  <body>
+    <div class="row">
+      <div class="large-8 medium-8 columns">
+        <div class="row">
+          <h1>{{pokemon.name|capitalize}}</h1>
+          <!--<img src="/static/imgs/pokemon/{{ pokemon.id | ConvertToImageName }}.png"> -->
+          <h3>Seen by: {{pokemon.seen_count|default('No data')}}</h3>
+          <h3>Wanted by: {{pokemon.want_count|default('No data')}}</h3>
+          <h3>Catched by: {{pokemon.have_count|default('No data')}}</h3>
+          <h3>Type: {% for i in pokemon.types %}{{i.name}} {% endfor %}</h3>
+          <h3>Candy needed: {{pokemon.evolution_candy_amount}}</h3>
+          <h3>Potential moves:</h3>
+          {% for i in pokemon.moves %}
+          <span>{{i.name}}</span></br>
+          {% endfor %}
+          
+          <img src="holder.js/200x200">
+        </div>
+      </div>
+      <div class="large-4 medium-4 columns">
+        <h1> right side column </h1>
+      </div>
+    </div>
+    <script src="/static/js/vendor/jquery.js"></script>
+    <script src="/static/js/vendor/what-input.js"></script>
+    <script src="/static/js/vendor/foundation.js"></script>
+    <script src="/static/js/app.js"></script>
+  </body>
+</html>

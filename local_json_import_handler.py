@@ -28,13 +28,16 @@ def LocalImport():
                 method='GET', retry_options=retry_options)
   return 'Done!'
 
-@app.route('/local-import/worker')
-def LocalImportWoker():
+@app.route('/local-import/worker/<string:data_type>')
+def LocalImportWoker(data_type=None):
   local_json_dir = os.path.abspath(os.path.join(LOCAL_PATH, 'local_json'))
   assert os.path.isdir(local_json_dir)
-  json_file_list = [os.path.join(local_json_dir, f) for f in
-      os.listdir(local_json_dir) if f.endswith('.json') and
-      os.path.isfile(os.path.join(local_json_dir, f))]
+  if data_type:
+    json_file_list = [os.path.join(local_json_dir, '%s.json' % data_type)]
+  else:
+    json_file_list = [os.path.join(local_json_dir, f) for f in
+        os.listdir(local_json_dir) if f.endswith('.json') and
+        os.path.isfile(os.path.join(local_json_dir, f))]
   for file_path in json_file_list:
     try:
       type_match_result = file_pattern.match(file_path)

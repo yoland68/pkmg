@@ -7,19 +7,42 @@
     <title>PokeCenter</title>
     <link rel="stylesheet" href="/static/css/foundation.css">
     <link rel="stylesheet" href="/static/css/app.css">
+    <script src="/static/js/holder.js"></script>
   </head>
   <body>
     <div class="row">
       <div class="large-8 medium-8 columns">
         <div class="row">
+        
         {% for pokemon in pokemons %}
         <div class="large-3 medium-4 columns">
-          <img src="/static/imgs/pokemon/{{ pokemon.id | ConvertToImageName }}.png">
+          <a data-open="pokemon-modal-{{pokemon.id}}">
+            <!--<img src="/static/imgs/pokemon/{{ pokemon.id | ConvertToImageName }}.png"> -->
+            <img src="holder.js/200x200">
           <h4>{{pokemon.name|capitalize}}</h4>
+          </a>
+        </div>
+        <div id="pokemon-modal-{{pokemon.id}}" class="reveal" data-reveal>
+          <h1>{{pokemon.name|capitalize}}</h4>
         </div>
         {% endfor %}
         </div>
       </div>
+      <div class="large-4 medium-4 columns">
+      <div class="reveal" id="exampleModal1" data-reveal>
+        <h1>Awesome. I Have It.</h1>
+        <p class="lead">Your couch. It is mine.</p>
+        <p>I'm a cool paragraph that lives inside of an even cooler modal. Wins!</p>
+        <button class="close-button" data-close aria-label="Close modal" type="button">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <p><a data-open="exampleModal1">Click me for a modal</a></p>
+      </div>
     </div>
+    <script src="/static/js/vendor/jquery.js"></script>
+    <script src="/static/js/vendor/what-input.js"></script>
+    <script src="/static/js/vendor/foundation.js"></script>
+    <script src="/static/js/app.js"></script>
   </body>
 </html>
