@@ -5,8 +5,8 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PokeCenter</title>
-    <link rel="stylesheet" href="css/foundation.css">
-    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="/static/css/foundation.css">
+    <link rel="stylesheet" href="/static/css/app.css">
   </head>
   <body>
     <div class="row">
@@ -15,7 +15,7 @@
         {% for pokemon in pokemons %}
         <div class="large-3 medium-4 columns">
           <img src="/static/imgs/pokemon/{{ pokemon.id | ConvertToImageName }}.png">
-          <h4>{{pokemon.name}}</h4>
+          <h4>{{pokemon.name|capitalize}}</h4>
         </div>
         {% endfor %}
         </div>
