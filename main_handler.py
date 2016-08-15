@@ -7,6 +7,7 @@ from google.appengine.api import users
 from google.appengine.ext import ndb
 
 import jinja_filters
+import util
 
 app = flask.Flask(__name__)
 
@@ -23,9 +24,11 @@ def MainView():
 def PokemonDetailView(pokemon_id):
   pokemon_entity = models.Pokemon.get_by_id(pokemon_id)
   if pokemon_entity is not None:
+    evo_key_map, evo_pokemon_map = util.CreateEvolutionInfo(pokemon_entity)
     pokemon = pokemon_entity.to_dict()
     return flask.render_template(
-        'pokemon_detail.html', pokemon=pokemon)
+        'pokemon_detail.html', pokemon=pokemon, evo_key_map=evo_key_map,
+        evo_pokemon_map=evo_pokemon_map)
   else:
     flask.abort(404)
 

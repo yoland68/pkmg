@@ -28,6 +28,7 @@ def LocalImport():
                 method='GET', retry_options=retry_options)
   return 'Done!'
 
+@app.route('/local-import/worker/')
 @app.route('/local-import/worker/<string:data_type>')
 def LocalImportWoker(data_type=None):
   local_json_dir = os.path.abspath(os.path.join(LOCAL_PATH, 'local_json'))

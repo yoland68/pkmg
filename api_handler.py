@@ -10,6 +10,7 @@ import models
 import util
 
 app = flask.Flask(__name__)
+app.json_encoder = util.ModelJSONEncoder
 
 @app.route('/api/<string:model_type>/single')
 def ApiSingle(model_type):
@@ -30,7 +31,12 @@ def ApiSingle(model_type):
     if result is None:
       logging.error('%s result does not exist', model_class._class_name())
       flask.abort(404)
-    return flask.jsonify(result.to_dict())
+    result_dict = result.to_dict()
+    if isinstance(result, models.Pokemon):
+      evo_key_map, evo_pokemon_map = util.CreateEvolutionInfo(result)
+      result_dict['evo_key_map'] = evo_key_map
+      result_dict['evo_pokemon_map'] = evo_pokemon_map
+    return flask.jsonify(result_dict)
   except AttributeError as e:
     logging.error("Error: %s", e)
     flask.abort(404)

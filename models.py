@@ -48,7 +48,7 @@ class Type(BaseModel):
 
   def to_dict(self):
     return {
-        'id': str(self.key.id()),
+        'id': self.key.id(),
         'name': self.name
     }
 
@@ -66,14 +66,14 @@ class Pokemon(BaseModel):
 
   def to_dict(self):
     return {
-        'id': int(self.key.id()),
+        'id': self.key.id(),
         'name': self.name,
-        'evolution_chain_key': str(self.evolution_chain_key),
+        'evolution_chain': self.evolution_chain_key,
         'seen_count': self.seen_count,
         'want_count': self.want_count,
         'have_count': self.have_count,
         'types': [t.get() for t in self.type_keys],
-        'evolves_into': [str(e) for e in self.evolves_into],
+        'evolves_into': {e.id(): e.get() for e in self.evolves_into},
         'moves': [k.get() for k in self.move_keys],
         'evolution_candy_amount': self.evolution_candy_amount,
    }
@@ -100,8 +100,8 @@ class Evolution(BaseModel):
 
   def to_dict(self):
     return {
-        'id': str(self.key.id()),
-        'pokemon_keys': [str(k) for k in self.pokemon_keys]
+        'id': self.key.id(),
+        'pokemons': [k.get() for k in self.pokemon_keys]
     }
 
   @staticmethod
@@ -109,7 +109,9 @@ class Evolution(BaseModel):
     if dct.get('pokemon_keys') is not None and len(dct.get('pokemon_keys')) != 0:
       pokemon_list = []
       for poke in dct.get('pokemon_keys'):
-        pokemon_list.append(ndb.Key('Pokemon', poke))
+        current_key = ndb.Key('Pokemon', poke)
+        if current_key.get():
+          pokemon_list.append(ndb.Key('Pokemon', poke))
       dct.update({'pokemon_keys': pokemon_list})
     return dct
 
@@ -127,7 +129,7 @@ class Move(BaseModel):
   def to_dict(self):
     return {
         'name': self.name,
-        'type_key': str(self.type_key)
+        'type': self.type_key.get()
     }
 
 
@@ -157,11 +159,11 @@ class Trainer(BaseModel):
 
   def to_dict(self):
     return {
-        'user_id': str(self.key.id()),
-        'reports': [str(k) for k in self.reports],
-        'want_list': [str(k) for k in self.want_list],
-        'seen_list': [str(k) for k in self.seen_list],
-        'have_list': [str(k) for k in self.have_list]
+        'user_id': self.key.id(),
+        'reports': [k.get() for k in self.reports],
+        'want_list': [k.get() for k in self.want_list],
+        'seen_list': [k.get() for k in self.seen_list],
+        'have_list': [k.get() for k in self.have_list]
     }
 
   @staticmethod
@@ -181,5 +183,4 @@ class Trainer(BaseModel):
       for i in dct.get('have_list'):
         have_list.append(ndb.Key('Pokemon', i))
       dct.update({'have_list': have_list})
-
     return dct

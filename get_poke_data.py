@@ -45,9 +45,12 @@ def EvolutionImport(api_url, evolution_json_file):
           _GetId(species_info.get('url'), POKEMON_SPECIES_PATTERN))
       if pokemon.get('evolves_to'):
         for i in pokemon.get('evolves_to'):
-          pokemon_queue.append(i)
+          if i is not None:
+            import pdb
+            pdb.set_trace()
+            pokemon_queue.append(i)
     evolution_list.append({'id': evo_chain_id, 'pokemon_keys': pokemon_list})
-  _WriteToFile(EVOLUTION_JSON_FILE, json.dumps(evolution_list))
+  _WriteToFile(EVOLUTION_JSON_FILE, evolution_list)
 
 
 def PokemonAndMoveImport(api_url, pokemon_json_file, move_json_file):
@@ -130,8 +133,8 @@ def _WriteToFile(file_name, obj):
     f.write(json.dumps(obj))
 
 def main():
-  TypeImport(TYPE_API_URL, TYPE_JSON_FILE)
-  # EvolutionImport(EVOLUTION_API_URL, EVOLUTION_JSON_FILE)
+  # TypeImport(TYPE_API_URL, TYPE_JSON_FILE)
+  EvolutionImport(EVOLUTION_API_URL, EVOLUTION_JSON_FILE)
   # PokemonAndMoveImport(POKEMON_API_URL, 'local_json/pokemon.json', 'local_json/move.json')
 
 if __name__ == '__main__':

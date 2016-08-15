@@ -20,6 +20,9 @@
           <h3>Catched by: {{pokemon.have_count|default('No data')}}</h3>
           <h3>Type: {% for i in pokemon.types %}{{i.name}} {% endfor %}</h3>
           <h3>Candy needed: {{pokemon.evolution_candy_amount}}</h3>
+          <hr>
+          {{evo_key_map|ConstEvoChain(evo_pokemon_map, pokemon.id)}}
+          <hr>
           <h3>Potential moves:</h3>
           {% for i in pokemon.moves %}
           <span>{{i.name}}</span></br>
