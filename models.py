@@ -59,10 +59,12 @@ class Pokemon(BaseModel):
   seen_count = ndb.IntegerProperty(indexed=True)
   want_count = ndb.IntegerProperty(indexed=True)
   have_count = ndb.IntegerProperty(indexed=True)
+  rare_score = ndb.IntegerProperty(indexed=True)
   type_keys = ndb.KeyProperty(kind='Type', repeated=True)
   evolves_into = ndb.KeyProperty(kind='Pokemon', repeated=True)
   move_keys = ndb.KeyProperty(kind='Move', repeated=True)
   evolution_candy_amount = ndb.IntegerProperty(indexed=False)
+  locations = ndb.GeoPtProperty(indexed=False, repeated=True)
 
   def to_dict(self):
     return {
@@ -72,6 +74,7 @@ class Pokemon(BaseModel):
         'seen_count': self.seen_count,
         'want_count': self.want_count,
         'have_count': self.have_count,
+        'rare_score': self.rare_score,
         'types': [t.get() for t in self.type_keys],
         'evolves_into': {e.id(): e.get() for e in self.evolves_into},
         'moves': [k.get() for k in self.move_keys],
@@ -146,41 +149,55 @@ class Report(BaseModel):
 
   @staticmethod
   def object_hook(dct):
-    if dct.get('location') is not None:
+    if dct.get('pokemon_key') is not None:
       dct.update({'pokemon_key': ndb.Key('Pokemon', dct.get('type_key'))})
     return dct
 
 
 class Trainer(BaseModel):
-  reports = ndb.StructuredProperty(Report, repeated=True)
-  want_list = ndb.KeyProperty(kind='Pokemon', repeated=True)
-  seen_list = ndb.KeyProperty(kind='Pokemon', repeated=True)
-  have_list = ndb.KeyProperty(kind='Pokemon', repeated=True)
+  report_keys = ndb.KeyProperty(Report, indexed=True, repeated=True)
+  user_id = ndb.StringProperty(required=True, indexed=True)
+  ign = ndb.StringProperty(indexed=True)
+  city = ndb.StringProperty(indexed=False)
+  team = ndb.IntegerProperty(indexed=False, choices=[1,2,3])
+  location = ndb.GeoPtProperty(indexed=False)
+  want_pokemon_keys = ndb.KeyProperty(
+      kind='Pokemon', indexed=False, repeated=True)
+  seen_pokemon_keys = ndb.KeyProperty(
+      kind='Pokemon', indexed=False, repeated=True)
+  have_pokemon_keys = ndb.KeyProperty(
+      kind='Pokemon', indexed=False, repeated=True)
 
   def to_dict(self):
     return {
         'user_id': self.key.id(),
-        'reports': [k.get() for k in self.reports],
-        'want_list': [k.get() for k in self.want_list],
-        'seen_list': [k.get() for k in self.seen_list],
-        'have_list': [k.get() for k in self.have_list]
+        'reports': [k.get() for k in self.report_keys],
+        'city': self.city,
+        'team': self.team,
+        'location': self.location,
+        'want_list': [k.get() for k in self.want_pokemon_keys],
+        'seen_list': [k.get() for k in self.seen_pokemon_keys],
+        'have_list': [k.get() for k in self.have_pokemon_keys]
     }
 
   @staticmethod
   def object_hook(dct):
-    if dct.get('seen_list') is not None and len(dct.get('seen_list')) != 0:
-      seen_list = []  
-      for i in dct.get('seen_list'):
-        seen_list.append(ndb.Key('Pokemon', i))
-      dct.update({'seen_list': seen_list})
-    if dct.get('want_list') is not None and len(dct.get('want_list')) != 0:
-      want_list = []  
-      for i in dct.get('want_list'):
-        have_list.append(ndb.Key('Pokemon', i))
-      dct.update({'want_list': want_list})
-    if dct.get('have_list') is not None and len(dct.get('have_list')) != 0:
-      have_list = []  
-      for i in dct.get('have_list'):
-        have_list.append(ndb.Key('Pokemon', i))
-      dct.update({'have_list': have_list})
+    if dct.get('seen_pokemon_keys') is not None and len(
+        dct.get('seen_pokemon_keys')) != 0:
+      seen_pokemon_keys = []  
+      for i in dct.get('seen_pokemon_keys'):
+        seen_pokemon_keys.append(ndb.Key('Pokemon', i))
+      dct.update({'seen_pokemon_keys': seen_pokemon_keys})
+    if dct.get('want_pokemon_keys') is not None and len(
+        dct.get('want_pokemon_keys')) != 0:
+      want_pokemon_keys = []  
+      for i in dct.get('want_pokemon_keys'):
+        have_pokemon_keys.append(ndb.Key('Pokemon', i))
+      dct.update({'want_pokemon_keys': want_pokemon_keys})
+    if dct.get('have_pokemon_keys') is not None and len(
+        dct.get('have_pokemon_keys')) != 0:
+      have_pokemon_keys = []  
+      for i in dct.get('have_pokemon_keys'):
+        have_pokemon_keys.append(ndb.Key('Pokemon', i))
+      dct.update({'have_pokemon_keys': have_pokemon_keys})
     return dct

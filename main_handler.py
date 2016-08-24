@@ -13,7 +13,6 @@ app = flask.Flask(__name__)
 
 jinja_filters.AddJinjaFilteres(app)
 
-
 @app.route('/')
 def MainView():
   pokemon_entities = models.Pokemon.query().fetch()
