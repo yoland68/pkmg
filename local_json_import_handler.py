@@ -14,7 +14,7 @@ app = flask.Flask(__name__)
 
 file_pattern = re.compile(r'.*/(\w+).json')
 
-LOCAL_PATH = '/Users/yolandyan/Code/pkm/app'
+LOCAL_PATH = os.getcwd()
 
 @app.route('/local-import')
 def LocalImport():
@@ -32,7 +32,7 @@ def LocalImport():
 @app.route('/local-import/worker/<string:data_type>')
 def LocalImportWoker(data_type=None):
   local_json_dir = os.path.abspath(os.path.join(LOCAL_PATH, 'local_json'))
-  assert os.path.isdir(local_json_dir)
+  assert os.path.isdir(local_json_dir), "%s is not a directory" % local_json_dir
   if data_type:
     json_file_list = [os.path.join(local_json_dir, '%s.json' % data_type)]
   else:
