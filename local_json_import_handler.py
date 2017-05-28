@@ -2,11 +2,13 @@
 
 import os
 import re
+
 import flask
 import models
 import logging
 from google.appengine.api import users
 from google.appengine.ext import ndb
+from google.appengine.api import taskqueue
 
 import util
 
@@ -14,13 +16,15 @@ app = flask.Flask(__name__)
 
 file_pattern = re.compile(r'.*/(\w+).json')
 
-LOCAL_PATH = '/Users/yolandyan/Code/pkm/app'
+LOCAL_PATH = '/home/yoland/Code/pkmg'
 
 @app.route('/local-import')
 def LocalImport():
   retry_options = taskqueue.TaskRetryOptions(task_retry_limit=0)
-  if self.request.GET.get('queue_name'):
-    queue_name = self.request.GET.get('queue_name')
+  import pdb
+  pdb.set_trace()
+  if flask.request.args.get('queue_name'):
+    queue_name = flask.request.args.get('queue_name')
   else:
     queue_name = 'default'
   taskqueue.add(url='/local-import/worker',

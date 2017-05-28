@@ -1,3 +1,4 @@
 lib/
 local_json/
 *.sqlite
+*.pyc
